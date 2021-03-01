@@ -23,9 +23,14 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Use(WriteToConsole)
 	mux.Use(NoSurf)
 	mux.Use(SessionLoad)
-	mux.Use(middleware.Logger)
+	//mux.Use(middleware.Logger) <-- this avoids the `panic: interface conversion: *scs.bufferedResponseWriter is not io.ReaderFrom: missing method ReadFrom`
 
 	mux.Get("/", handlers.Repo.Home)
 	mux.Get("/about", handlers.Repo.About)
+
+	//Tell the server where to search for static files
+	fileServer := http.FileServer(http.Dir("./static/"))
+	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
+
 	return mux
 }
